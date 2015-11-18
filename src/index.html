@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="style.css">
+    <script src="game.js" defer></script>
+    <title>2048.js</title>
+  </head>
+  <body>
+    <svg>
+      <defs>
+        <pattern id="repeat" width=".25" height=".25">
+          <rect width="150" height="150" rx="15" ry="15" fill="black" />
+        </pattern>
+        <mask id="mask">
+          <rect width="675" height="675" fill="white" />
+          <rect x="15" y="15" width="660" height="660" fill="url(#repeat)" />
+        </mask>
+      </defs>
+    </svg>
+    <header>
+      <h1>2048.js</h1>
+    </header>
+    <section>
+      <div id="grid">
+        <svg id="window">
+          <rect width="675" height="675" fill="grey" />
+        </svg>
+      </div>
+    </section>
+  </body>
+</html>

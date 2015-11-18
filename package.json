@@ -1,0 +1,42 @@
+{
+  "name": "Project2048",
+  "version": "1.0.0",
+  "description": "2048 on Javascript",
+  "main": "pong.js",
+  "scripts": {
+    "start": "npm run build && npm run start-server",
+    "start-server": "http-server dist",
+    "build": "npm run clean && mkdir dist && npm run build-html && npm run build-css && npm run build-js",
+    "clean": "rm -rf dist",
+    "build-html": "cp src/index.html dist/index.html",
+    "build-css": "cp src/style.css dist/style.css",
+    "build-js": "browserify src/game.js --outfile dist/game.js --transform babelify",
+    "watch": "npm run build && npm run watch-html & npm run watch-css & npm run watch-js & npm run start-server",
+    "watch-html": "watch-spawn -p 'src/index.html' npm run build-html",
+    "watch-css": "watch-spawn -p 'src/style.css' npm run build-css",
+    "watch-js": "watchify src/game.js --outfile dist/game.js --transform babelify --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yongjun21/Project2048.git"
+  },
+  "keywords": [
+    "2048",
+    "game",
+    "javascript",
+    "css"
+  ],
+  "author": "@yongjun21",
+  "license": "ISC",
+  "dependencies": {
+    "babel-preset-es2015": "^6.1.2",
+    "babelify": "^7.2.0",
+    "browserify": "^12.0.1",
+    "http-server": "^0.8.5",
+    "semistandard": "^7.0.2"
+  },
+  "devDependencies": {
+    "watch-spawn": "^1.0.6",
+    "watchify": "^3.6.0"
+  }
+}
