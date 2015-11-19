@@ -4,6 +4,15 @@ var speed = 120;
 
 var grid = document.getElementById('grid');
 var gridState = [];
+var elapsed = 0;
+var moves = 0;
+var score = 0;
+
+var tileColor = ['#EEE6DB', '#ECE0C8', '#EFB27C', '#F39768',
+                 '#F37D63', '#F46042', '#EACF76', '#EDCB67',
+                 '#ECC85A', '#E7C257', '#E8BE4E', '#EF676B',
+                 '#EE4D59', '#E14239', '#72B3D5', '#5C9FDF',
+                 '#007CBD'];
 
 class Tile {
   constructor (left, top) {
@@ -14,8 +23,21 @@ class Tile {
     this.top = top;
   }
 
-  update (origin) {
-    if (this.value) this.gc = this.div;
+  increment () {
+    this.value++;
+    if (this.value > 2) this.div.classList.add('white-font');
+    if (this.value > 6) this.div.classList.add('small-font');
+    if (this.value > 9) this.div.classList.add('smaller-font');
+    if (this.value > 16) this.div.classList.add('smallest-font');
+    this.div.style.backgroundColor = tileColor[this.value - 1];
+    this.div.textContent = Math.pow(2, this.value);
+  }
+
+  substitute (origin) {
+    if (this.value) {
+      this.gc = this.div;
+      score += Math.pow(2, this.value + 1);
+    }
     this.div = gridState[origin].div;
     this.value = gridState[origin].value;
     gridState[origin].div = null;
@@ -30,8 +52,7 @@ class Tile {
       if (self.gc && self.gc !== event.target) {
         grid.removeChild(self.gc);
         self.gc = null;
-        self.value += 1;
-        self.div.textContent = Math.pow(2, self.value);
+        self.increment();
       }
     };
     this.div.addEventListener('transitionend', listener);
@@ -42,8 +63,8 @@ class Tile {
 }
 
 // Initialization
-for (var y = 15; y <= 510; y += 165) {
-  for (var x = 15; x <= 510; x += 165) {
+for (var y = 10; y <= 340; y += 110) {
+  for (var x = 10; x <= 340; x += 110) {
     gridState.push(new Tile(x, y));
   }
 }
@@ -57,13 +78,12 @@ function generateTile (pos) {
   if (!(pos + 1)) pos = emptySlot[Math.floor(Math.random() * emptySlot.length)];
   var div = document.createElement('div');
   div.classList.add('tile');
-  div.classList.add('two');
-  div.textContent = '2';
   div.style.left = gridState[pos].left + 'px';
   div.style.top = gridState[pos].top + 'px';
   grid.appendChild(div);
   gridState[pos].div = div;
-  gridState[pos].value = 1;
+  gridState[pos].value = 6;
+  gridState[pos].increment();
 }
 
 function slideTiles (smallStep, bigStep) {
@@ -86,7 +106,7 @@ function slideTiles (smallStep, bigStep) {
           target += smallStep;
         }
         duration = (current - target) / smallStep;
-        if (duration) gridState[target].update(current).slide(duration);
+        if (duration) gridState[target].substitute(current).slide(duration);
         delay = Math.max(delay, duration);
       }
       current += smallStep;
@@ -103,10 +123,14 @@ var listener = function (event) {
     : event.keyCode === 38 ? slideTiles(4, -15)
     : event.keyCode === 39 ? slideTiles(-1, 0)
     : event.keyCode === 40 ? slideTiles(-4, 15) : 0;
+  if (delay) delay++;
   window.setTimeout(function () {
-    if (delay) generateTile();
+    if (delay) {
+      moves++;
+      generateTile();
+    }
     document.addEventListener('keydown', listener);
-  }, (delay + 1) * speed);
+  }, delay * speed);
 };
 
 generateTile();

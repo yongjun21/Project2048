@@ -1,10 +1,11 @@
 body {
   background-color: black;
-  font-family: helvetica;
+  font-family: 'Ubuntu', sans-serif;
   text-align: center;
 }
 
 h1 {
+
   color: white;
   font-size: 80px;
   margin: 10px 0 20px 0;
@@ -17,37 +18,49 @@ svg {
 }
 
 #grid {
-  width: 675px;
-  height: 675px;
+  width: 450px;
+  height: 450px;
   margin: 0 auto;
-  background-color: lightgrey;
+  background-color: #CBC2B3;
   position: relative;
 }
 
 #window {
-  width: 675px;
-  height: 675px;
+  width: 450px;
+  height: 450px;
   position: absolute;
   left: 0;
   top: 0;
-  z-index: 1;
+  z-index: 2;
 }
 
 .tile {
-  width: 150px;
-  height: 150px;
-  border-radius: 15px;
-  background-color: lightgrey;
-  font-size: 70px;
-  line-height: 150px;
+  width: 100px;
+  height: 100px;
+  line-height: 100px;
+  font-size: 50px;
+  font-weight: 700;
+  color: #47403A;
   vertical-align: middle;
   position: absolute;
-  z-index: 0;
+  z-index: 1;
   transition-property: left, top;
   transition-duration: 0ms;
   transition-timing-function: linear;
 }
 
-.two {
-  background-color: white;
+.small-font {
+  font-size: 42px;
+}
+
+.smaller-font {
+  font-size: 32px;
+}
+
+.smallest-font {
+  font-size: 28px;
+}
+
+.white-font {
+  color: white;
 }
