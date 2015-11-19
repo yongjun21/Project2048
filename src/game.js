@@ -51,15 +51,13 @@ class Tile {
     var self = this;
     var listener = function (event) {
       self.div.removeEventListener('transitionend', listener);
-      if (self.gc && self.gc !== event.target) {
-        grid.removeChild(self.gc);
-        self.gc = null;
-        self.increment();
-        score += Math.pow(2, self.value);
-        scoreP.textContent = score;
-      }
+      grid.removeChild(self.gc);
+      self.gc = null;
+      self.increment();
+      score += Math.pow(2, self.value);
+      scoreP.textContent = score;
     };
-    this.div.addEventListener('transitionend', listener);
+    if (self.gc) this.div.addEventListener('transitionend', listener);
     this.div.style.transitionDuration = duration * speed + 'ms';
     this.div.style.left = this.left + 'px';
     this.div.style.top = this.top + 'px';
