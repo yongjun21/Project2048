@@ -1,14 +1,28 @@
 body {
-  background-color: black;
+  background-color: #BBADA0;
+  color: white;
   font-family: 'Ubuntu', sans-serif;
   text-align: center;
+  margin: 0;
+}
+
+header {
+  background-color: black;
+}
+
+h1, h4, p {
+  margin: 0;
 }
 
 h1 {
-
-  color: white;
   font-size: 80px;
-  margin: 10px 0 20px 0;
+  padding: 10px 0 20px 0;
+}
+
+p {
+  font-size: 28px;
+  font-weight: bold;
+  padding-top: 10px;
 }
 
 svg {
@@ -17,17 +31,33 @@ svg {
   position: absolute;
 }
 
-#grid {
+.score-board {
   width: 450px;
-  height: 450px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.score-box {
+  background-color: #47403A;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+#grid {
+  width: 430px;
+  height: 430px;
   margin: 0 auto;
   background-color: #CBC2B3;
   position: relative;
 }
 
 #window {
-  width: 450px;
-  height: 450px;
+  width: 430px;
+  height: 430px;
   position: absolute;
   left: 0;
   top: 0;
@@ -37,16 +67,27 @@ svg {
 .tile {
   width: 100px;
   height: 100px;
+  border-radius: 10px;
   line-height: 100px;
   font-size: 50px;
-  font-weight: 700;
+  font-weight: bold;
   color: #47403A;
   vertical-align: middle;
   position: absolute;
   z-index: 1;
-  transition-property: left, top;
+  transition-property: left, top,
+    -ms-transform, -webkit-transform, transform;
   transition-duration: 0ms;
   transition-timing-function: linear;
+}
+
+.tile.new {
+  -ms-transform: scale(0.5);
+  -ms-transform-origin: center;
+  -webkit-transform: scale(0.5);
+  -webkit-transform-origin: center;
+  transform: scale(0.5);
+  transform-origin: center;
 }
 
 .small-font {

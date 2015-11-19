@@ -14,8 +14,8 @@
           <rect width="100" height="100" rx="10" ry="10" fill="black" />
         </pattern>
         <mask id="mask">
-          <rect width="450" height="450" fill="white" />
-          <rect x="10" y="10" width="440" height="440" fill="url(#repeat)" />
+          <rect width="440" height="440" fill="white" />
+          <rect width="440" height="440" fill="url(#repeat)" />
         </mask>
       </defs>
     </svg>
@@ -23,9 +23,25 @@
       <h1>2048.js</h1>
     </header>
     <section>
+      <div class="score-board">
+        <div>
+          <div class="score-box">
+            <h4>Moves</h4>
+            <p id="moves">0</p>
+          </div>
+          <div class="score-box">
+            <h4>Score</h4>
+            <p id="score">0</p>
+          </div>
+        </div>
+        <div class="score-box">
+          <h4>Elapsed</h4>
+          <p id="elapsed">0:00</p>
+        </div>
+      </div>
       <div id="grid">
         <svg id="window" style="mask: url(#mask);">
-          <rect width="450" height="450" fill="#BBADA0" />
+          <rect width="430" height="430" fill="#BBADA0" />
         </svg>
       </div>
     </section>

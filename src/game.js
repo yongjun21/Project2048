@@ -3,6 +3,9 @@
 var speed = 120;
 
 var grid = document.getElementById('grid');
+var elapsedP = document.getElementById('elapsed');
+var movesP = document.getElementById('moves');
+var scoreP = document.getElementById('score');
 var gridState = [];
 var elapsed = 0;
 var moves = 0;
@@ -36,7 +39,6 @@ class Tile {
   substitute (origin) {
     if (this.value) {
       this.gc = this.div;
-      score += Math.pow(2, this.value + 1);
     }
     this.div = gridState[origin].div;
     this.value = gridState[origin].value;
@@ -53,6 +55,8 @@ class Tile {
         grid.removeChild(self.gc);
         self.gc = null;
         self.increment();
+        score += Math.pow(2, self.value);
+        scoreP.textContent = score;
       }
     };
     this.div.addEventListener('transitionend', listener);
@@ -63,8 +67,8 @@ class Tile {
 }
 
 // Initialization
-for (var y = 10; y <= 340; y += 110) {
-  for (var x = 10; x <= 340; x += 110) {
+for (var y = 0; y <= 330; y += 110) {
+  for (var x = 0; x <= 330; x += 110) {
     gridState.push(new Tile(x, y));
   }
 }
@@ -78,12 +82,17 @@ function generateTile (pos) {
   if (!(pos + 1)) pos = emptySlot[Math.floor(Math.random() * emptySlot.length)];
   var div = document.createElement('div');
   div.classList.add('tile');
+  div.classList.add('new');
   div.style.left = gridState[pos].left + 'px';
   div.style.top = gridState[pos].top + 'px';
   grid.appendChild(div);
   gridState[pos].div = div;
-  gridState[pos].value = 6;
+  gridState[pos].value = Math.random() < 0.1 ? 1 : 0;
   gridState[pos].increment();
+  div.style.transitionDuration = speed + 'ms';
+  setTimeout(function () {
+    div.classList.remove('new');
+  }, 20);
 }
 
 function slideTiles (smallStep, bigStep) {
@@ -123,15 +132,25 @@ var listener = function (event) {
     : event.keyCode === 38 ? slideTiles(4, -15)
     : event.keyCode === 39 ? slideTiles(-1, 0)
     : event.keyCode === 40 ? slideTiles(-4, 15) : 0;
-  if (delay) delay++;
-  window.setTimeout(function () {
+  setTimeout(function () {
     if (delay) {
       moves++;
+      movesP.textContent = moves;
       generateTile();
     }
     document.addEventListener('keydown', listener);
   }, delay * speed);
 };
+
+setInterval(function () {
+  elapsed++;
+  var second = elapsed % 60;
+  var minute = (elapsed - second) % 3600 / 60;
+  var hour = Math.floor((elapsed - 60 * minute - second) / 3600);
+  elapsedP.textContent = hour
+    ? hour + ':' + (minute < 10 ? '0' + minute : minute) + 'h'
+    : minute + ':' + (second < 10 ? '0' + second : second);
+}, 1000);
 
 generateTile();
 generateTile();
