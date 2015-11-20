@@ -8,21 +8,16 @@ body {
 
 header {
   background-color: black;
+  padding: 10px 0 15px 0;
+  text-align: left;
 }
 
 h1, h4, p {
   margin: 0;
 }
 
-h1 {
-  font-size: 80px;
-  padding: 10px 0 20px 0;
-}
-
 p {
-  font-size: 28px;
-  font-weight: bold;
-  padding-top: 10px;
+  font-size: 12px;
 }
 
 svg {
@@ -31,20 +26,38 @@ svg {
   position: absolute;
 }
 
-.score-board {
+.container {
   width: 450px;
   margin: 0 auto;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
 }
 
-.score-box {
+.icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 30px;
+}
+
+.heading {
+  width: 330px;
+}
+
+.score-board {
   background-color: #47403A;
+  min-width: 70px;
   margin: 10px;
   padding: 10px;
   border-radius: 10px;
   display: inline-block;
+}
+
+.score {
+  font-size: 28px;
+  font-weight: bold;
+  padding-top: 10px;
 }
 
 #grid {

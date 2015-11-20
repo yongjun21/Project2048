@@ -6,11 +6,12 @@
   "scripts": {
     "start": "npm run build && npm run start-server",
     "start-server": "http-server dist",
-    "build": "npm run clean && mkdir dist && npm run build-html && npm run build-css && npm run build-js",
+    "build": "npm run clean && mkdir dist && npm run build-html && npm run build-css && npm run build-js && npm build-assets",
     "clean": "rm -rf dist",
     "build-html": "cp src/index.html dist/index.html",
     "build-css": "cp src/style.css dist/style.css",
     "build-js": "browserify src/game.js --outfile dist/game.js --transform babelify",
+    "build-assets": "cp -r assets dist",
     "watch": "npm run build && npm run watch-html & npm run watch-css & npm run watch-js & npm run start-server",
     "watch-html": "watch-spawn -p 'src/index.html' npm run build-html",
     "watch-css": "watch-spawn -p 'src/style.css' npm run build-css",
