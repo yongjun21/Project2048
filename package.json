@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm run build && npm run start-server",
     "start-server": "http-server dist",
-    "build": "npm run clean && mkdir dist && npm run build-html && npm run build-css && npm run build-js && npm build-assets",
+    "build": "npm run clean && mkdir dist && npm run build-html && npm run build-css && npm run build-js && npm run build-assets",
     "clean": "rm -rf dist",
     "build-html": "cp src/index.html dist/index.html",
     "build-css": "cp src/style.css dist/style.css",

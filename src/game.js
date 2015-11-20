@@ -4,6 +4,7 @@ var speed = 120;
 var swipeThreshold = 80;
 
 var grid = document.getElementById('grid');
+var touchZone = document.querySelector('section');
 var elapsedP = document.getElementById('elapsed');
 var movesP = document.getElementById('moves');
 var scoreP = document.getElementById('score');
@@ -121,7 +122,7 @@ function slideTiles (smallStep, bigStep) {
 
 var triggerSlide = function (slideDirection) {
   document.removeEventListener('keydown', keyPressHandler);
-  document.removeEventListener('touchmove', swipeHandler);
+  touchZone.removeEventListener('touchmove', swipeHandler);
   var delay =
     slideDirection === 3 ? slideTiles(-1, 0)
     : slideDirection === 6 ? slideTiles(-4, 15)
@@ -134,7 +135,7 @@ var triggerSlide = function (slideDirection) {
       generateTile();
     }
     document.addEventListener('keydown', keyPressHandler);
-    document.addEventListener('touchmove', swipeHandler);
+    touchZone.addEventListener('touchmove', swipeHandler);
   }, delay * speed);
 };
 
@@ -149,6 +150,7 @@ var touchOrigin;
 var swipeDirection = 0;
 var swipeHandler = function (event) {
   event.preventDefault();
+  event.stopPropagation();
   var touchObj = event.changedTouches[0];
   if (!touchOrigin) {
     touchOrigin = [touchObj.clientX, touchObj.clientY];
@@ -181,6 +183,7 @@ var swipeHandler = function (event) {
 
 var resetSwipe = function (event) {
   event.preventDefault();
+  event.stopPropagation();
   swipeDirection = 0;
 };
 
@@ -197,7 +200,7 @@ setInterval(function () {
 generateTile();
 generateTile();
 document.addEventListener('keydown', keyPressHandler);
-document.addEventListener('touchstart', resetSwipe);
-document.addEventListener('touchmove', swipeHandler);
-document.addEventListener('touchcancel', resetSwipe);
-document.addEventListener('touchend', resetSwipe);
+touchZone.addEventListener('touchstart', resetSwipe);
+touchZone.addEventListener('touchmove', swipeHandler);
+touchZone.addEventListener('touchcancel', resetSwipe);
+touchZone.addEventListener('touchend', resetSwipe);
