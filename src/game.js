@@ -1,14 +1,15 @@
 'use strict';
 
-var speed = 120;
+var speed = 100;
 var swipeThreshold = 80;
 
 var grid = document.getElementById('grid');
-var touchZone = document.querySelector('section');
+var touchZone = document.getElementById('touchZone');
 var elapsedP = document.getElementById('elapsed');
 var movesP = document.getElementById('moves');
 var scoreP = document.getElementById('score');
 var gridState = [];
+var animatingElem = 0;
 var elapsed = 0;
 var moves = 0;
 var score = 0;
@@ -50,16 +51,21 @@ class Tile {
   }
 
   slide (duration) {
-    var self = this;
-    var listener = function (event) {
-      self.div.removeEventListener('transitionend', listener);
-      grid.removeChild(self.gc);
-      self.gc = null;
-      self.increment();
-      score += Math.pow(2, self.value);
+    animatingElem++;
+    var listener = this.gc ? function (event) {
+      this.div.removeEventListener('transitionend', listener);
+      grid.removeChild(this.gc);
+      this.gc = null;
+      this.increment();
+      score += Math.pow(2, this.value);
       scoreP.textContent = score;
+      animatingElem--;
+    } : function (event) {
+      this.div.removeEventListener('transitionend', listener);
+      animatingElem--;
     };
-    if (self.gc) this.div.addEventListener('transitionend', listener);
+    listener = listener.bind(this);
+    this.div.addEventListener('transitionend', listener);
     this.div.style.transitionDuration = duration * speed + 'ms';
     this.div.style.left = this.left + 'px';
     this.div.style.top = this.top + 'px';
@@ -84,14 +90,13 @@ function generateTile (pos) {
   div.classList.add('tile');
   div.style.left = gridState[pos].left + 'px';
   div.style.top = gridState[pos].top + 'px';
-  grid.appendChild(div);
   gridState[pos].div = div;
   gridState[pos].value = Math.random() < 0.1 ? 1 : 0;
   gridState[pos].increment();
+  grid.appendChild(div);
 }
 
 function slideTiles (smallStep, bigStep) {
-  var delay = 0;
   var duration = 0;
   var current = smallStep > 0 ? 0 : 15;
   var outerLoop, innerLoop;
@@ -111,44 +116,56 @@ function slideTiles (smallStep, bigStep) {
         }
         duration = (current - target) / smallStep;
         if (duration) gridState[target].substitute(current).slide(duration);
-        delay = Math.max(delay, duration);
       }
       current += smallStep;
     }
     current += bigStep;
   }
-  return delay;
 }
 
+var slideLock = false;
+var repeatCatcher = false;
+var touchOrigin;
+var swipeDirection = 0;
+
 var triggerSlide = function (slideDirection) {
-  document.removeEventListener('keydown', keyPressHandler);
-  touchZone.removeEventListener('touchmove', swipeHandler);
-  var delay =
-    slideDirection === 3 ? slideTiles(-1, 0)
-    : slideDirection === 6 ? slideTiles(-4, 15)
-    : slideDirection === 9 ? slideTiles(1, 0)
-    : slideDirection === 12 ? slideTiles(4, -15) : 0;
-  setTimeout(function () {
-    if (delay) {
-      moves++;
-      movesP.textContent = moves;
-      generateTile();
-    }
-    document.addEventListener('keydown', keyPressHandler);
-    touchZone.addEventListener('touchmove', swipeHandler);
-  }, delay * speed);
+  if (slideLock) return;
+  slideLock = true;
+  repeatCatcher = true;
+  if (slideDirection === 3) slideTiles(-1, 0);
+  else if (slideDirection === 6) slideTiles(-4, 15);
+  else if (slideDirection === 9) slideTiles(1, 0);
+  else slideTiles(4, -15);
+  if (animatingElem) {
+    movesP.textContent = ++moves;
+    var completeSlide = function () {
+      if (animatingElem) window.requestAnimationFrame(completeSlide);
+      else {
+        generateTile();
+        slideLock = false;
+      }
+    };
+    window.requestAnimationFrame(completeSlide);
+  } else slideLock = false;
+};
+
+var resetEvent = function (event) {
+  event.preventDefault();
+  event.stopPropagation();
+  swipeDirection = 0;
+  repeatCatcher = false;
 };
 
 var keyPressHandler = function (event) {
+  if (repeatCatcher) return;
   if (event.keyCode === 37) triggerSlide(9);
-  if (event.keyCode === 38) triggerSlide(12);
-  if (event.keyCode === 39) triggerSlide(3);
-  if (event.keyCode === 40) triggerSlide(6);
+  else if (event.keyCode === 38) triggerSlide(12);
+  else if (event.keyCode === 39) triggerSlide(3);
+  else if (event.keyCode === 40) triggerSlide(6);
 };
 
-var touchOrigin;
-var swipeDirection = 0;
 var swipeHandler = function (event) {
+  if (repeatCatcher) return;
   event.preventDefault();
   event.stopPropagation();
   var touchObj = event.changedTouches[0];
@@ -176,15 +193,9 @@ var swipeHandler = function (event) {
     return;
   }
   if (swipeDirection === 3 && deltaX > swipeThreshold) triggerSlide(3);
-  if (swipeDirection === 6 && deltaY > swipeThreshold) triggerSlide(6);
-  if (swipeDirection === 9 && deltaX < -swipeThreshold) triggerSlide(9);
-  if (swipeDirection === 12 && deltaY < -swipeThreshold) triggerSlide(12);
-};
-
-var resetSwipe = function (event) {
-  event.preventDefault();
-  event.stopPropagation();
-  swipeDirection = 0;
+  else if (swipeDirection === 6 && deltaY > swipeThreshold) triggerSlide(6);
+  else if (swipeDirection === 9 && deltaX < -swipeThreshold) triggerSlide(9);
+  else if (swipeDirection === 12 && deltaY < -swipeThreshold) triggerSlide(12);
 };
 
 setInterval(function () {
@@ -199,8 +210,10 @@ setInterval(function () {
 
 generateTile();
 generateTile();
+
+document.addEventListener('keyup', resetEvent);
 document.addEventListener('keydown', keyPressHandler);
-touchZone.addEventListener('touchstart', resetSwipe);
+touchZone.addEventListener('touchstart', resetEvent);
 touchZone.addEventListener('touchmove', swipeHandler);
-touchZone.addEventListener('touchcancel', resetSwipe);
-touchZone.addEventListener('touchend', resetSwipe);
+touchZone.addEventListener('touchcancel', resetEvent);
+touchZone.addEventListener('touchend', resetEvent);
