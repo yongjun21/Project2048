@@ -3,13 +3,14 @@
 var speed = 100;
 var swipeThreshold = 80;
 
+var async = require('async');
 var grid = document.getElementById('grid');
 var touchZone = document.getElementById('touchZone');
 var elapsedP = document.getElementById('elapsed');
 var movesP = document.getElementById('moves');
 var scoreP = document.getElementById('score');
 var gridState = [];
-var animatingElem = 0;
+var animatingElem = [];
 var elapsed = 0;
 var moves = 0;
 var score = 0;
@@ -38,45 +39,28 @@ class Tile {
     this.div.style.backgroundColor = tileColor[this.value - 1];
     this.div.textContent = Math.pow(2, this.value);
   }
-
-  substitute (origin) {
-    if (this.value) {
-      this.gc = this.div;
-    }
-    this.div = gridState[origin].div;
-    this.value = gridState[origin].value;
-    gridState[origin].div = null;
-    gridState[origin].value = 0;
-    return this;
-  }
-
-  slide (duration) {
-    animatingElem++;
-    var listener = this.gc ? function (event) {
-      this.div.removeEventListener('transitionend', listener);
-      grid.removeChild(this.gc);
-      this.gc = null;
-      this.increment();
-      score += Math.pow(2, this.value);
-      scoreP.textContent = score;
-      animatingElem--;
-    } : function (event) {
-      this.div.removeEventListener('transitionend', listener);
-      animatingElem--;
-    };
-    listener = listener.bind(this);
-    this.div.addEventListener('transitionend', listener);
-    this.div.style.transitionDuration = duration * speed + 'ms';
-    this.div.style.left = this.left + 'px';
-    this.div.style.top = this.top + 'px';
-  }
 }
 
 // Initialization
-for (var y = 0; y <= 330; y += 110) {
-  for (var x = 0; x <= 330; x += 110) {
-    gridState.push(new Tile(x, y));
+for (var y = 0; y < 4; y++) {
+  for (var x = 0; x < 4; x++) {
+    gridState.push(new Tile(x * 110, y * 110));
   }
+}
+
+function moveTile (origin, dest) {
+  if (origin === dest) return;
+  var duration = Math.abs(dest - origin);
+  duration = duration > 3 ? duration / 4 : duration;
+  gridState[origin].div.style.transitionDuration = duration * speed + 'ms';
+  animatingElem.push({'div': gridState[origin].div,
+                      'target': dest,
+                      'increment': gridState[dest].div ? 1 : 0});
+  if (gridState[dest].div) gridState[dest].gc = gridState[dest].div;
+  gridState[dest].div = gridState[origin].div;
+  gridState[dest].value = gridState[origin].value;
+  gridState[origin].div = null;
+  gridState[origin].value = 0;
 }
 
 function generateTile (pos) {
@@ -84,7 +68,7 @@ function generateTile (pos) {
     if (!val.value) acc.push(idx);
     return acc;
   }, []);
-  if (!emptySlot) return;
+  if (!emptySlot.length) return;
   if (!(pos + 1)) pos = emptySlot[Math.floor(Math.random() * emptySlot.length)];
   var div = document.createElement('div');
   div.classList.add('tile');
@@ -97,7 +81,6 @@ function generateTile (pos) {
 }
 
 function slideTiles (smallStep, bigStep) {
-  var duration = 0;
   var current = smallStep > 0 ? 0 : 15;
   var outerLoop, innerLoop;
   var prev, target;
@@ -108,14 +91,14 @@ function slideTiles (smallStep, bigStep) {
     innerLoop = 0;
     while (innerLoop++ < 4) {
       if (gridState[current].value) {
+        gridState[current].div.style.zIndex = innerLoop;
         if (gridState[current].value === prev) {
           prev = 0;
         } else {
           prev = gridState[current].value;
           target += smallStep;
         }
-        duration = (current - target) / smallStep;
-        if (duration) gridState[target].substitute(current).slide(duration);
+        moveTile(current, target);
       }
       current += smallStep;
     }
@@ -136,16 +119,31 @@ var triggerSlide = function (slideDirection) {
   else if (slideDirection === 6) slideTiles(-4, 15);
   else if (slideDirection === 9) slideTiles(1, 0);
   else slideTiles(4, -15);
-  if (animatingElem) {
+  if (animatingElem.length) {
     movesP.textContent = ++moves;
-    var completeSlide = function () {
-      if (animatingElem) window.requestAnimationFrame(completeSlide);
-      else {
-        generateTile();
-        slideLock = false;
-      }
-    };
-    window.requestAnimationFrame(completeSlide);
+    async.forEach(animatingElem, function (elem, callback) {
+      var listener = function (event) {
+        elem.div.removeEventListener('transitionend', listener);
+        if (elem.increment > 0) {
+          gridState[elem.target].increment();
+          score += Math.pow(2, gridState[elem.target].value);
+          scoreP.textContent = score;
+        }
+        callback(null);
+      };
+      elem.div.addEventListener('transitionend', listener);
+      elem.div.style.left = gridState[elem.target].left + 'px';
+      elem.div.style.top = gridState[elem.target].top + 'px';
+    }, function (err) {
+      if (err) throw err;
+      gridState.forEach(tile => {
+        if (tile.gc) grid.removeChild(tile.gc);
+        tile.gc = null;
+      });
+      animatingElem = [];
+      generateTile();
+      slideLock = false;
+    });
   } else slideLock = false;
 };
 
