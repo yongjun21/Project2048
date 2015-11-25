@@ -2,10 +2,11 @@
   "name": "Project2048",
   "version": "1.0.0",
   "description": "2048 on Javascript",
-  "main": "pong.js",
+  "main": "game.js",
   "scripts": {
     "start": "npm run build && npm run start-server",
     "start-server": "http-server dist",
+    "test": "semistandard",
     "build": "npm run clean && mkdir dist && npm run build-html && npm run build-css && npm run build-js && npm run build-assets",
     "clean": "rm -rf dist",
     "build-html": "cp src/index.html dist/index.html",
@@ -38,6 +39,7 @@
     "semistandard": "^7.0.2"
   },
   "devDependencies": {
+    "surge": "^0.17.3",
     "watch-spawn": "^1.0.6",
     "watchify": "^3.6.0"
   }
