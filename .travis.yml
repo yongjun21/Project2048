@@ -2,4 +2,7 @@ language: node_js
 node_js:
   - "4.1"
 after_success:
-  - surge --project ./dist --domain https://project2048.surge.sh
+  - surge --project ./dist --domain http://2048.daburu.xyz
+cache:
+  directories:
+    - node_modules
