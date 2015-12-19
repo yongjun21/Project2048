@@ -97,11 +97,10 @@ span {
   vertical-align: middle;
   position: absolute;
   z-index: 1;
-  transition-property: left, top
-  transition-duration: 0ms;
-  transition-timing-function: linear;
-  -webkit-animation: entrance 120ms linear;
-  animation: entrance 120ms linear;
+  transition: -webkit-transform 0ms linear;
+  transition: transform 0ms linear;
+  -webkit-animation: entrance 100ms linear;
+  animation: entrance 100ms linear;
 }
 
 @-webkit-keyframes entrance {
@@ -113,8 +112,6 @@ span {
 
 @keyframes entrance {
   0% {
-    -ms-transform: scale(0.5);
-    -ms-transform-origin: center;
     transform: scale(0.5);
     transform-origin: center;
   }
