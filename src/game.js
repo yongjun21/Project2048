@@ -1,9 +1,10 @@
 'use strict';
 
 var speed = 100;
-var swipeThreshold = 80;
+var swipeThreshold = 50;
 
 var async = require('async');
+var debounce = require('lodash.debounce');
 var grid = document.getElementById('grid');
 var touchZone = document.getElementById('touchZone');
 var elapsedP = document.getElementById('elapsed');
@@ -117,13 +118,11 @@ function slideTiles (smallStep, bigStep) {
 
 var slideLock = true;
 var repeatCatcher = false;
-var touchOrigin;
-var swipeDirection = 0;
+var touchOrigin = null;
 
 var triggerSlide = function (slideDirection) {
   if (slideLock) return;
   slideLock = true;
-  repeatCatcher = true;
   if (slideDirection === 3) slideTiles(-1, 0);
   else if (slideDirection === 6) slideTiles(-4, 15);
   else if (slideDirection === 9) slideTiles(1, 0);
@@ -158,53 +157,41 @@ var triggerSlide = function (slideDirection) {
   } else slideLock = false;
 };
 
-var resetEvent = function (event) {
+var swipeInit = function (event) {
   event.preventDefault();
   event.stopPropagation();
-  swipeDirection = 0;
-  repeatCatcher = false;
+  var touchObj = event.changedTouches[0];
+  touchOrigin = [touchObj.clientX, touchObj.clientY];
 };
 
 var keyPressHandler = function (event) {
   if (repeatCatcher) return;
+  repeatCatcher = true;
   if (event.keyCode === 37) triggerSlide(9);
   else if (event.keyCode === 38) triggerSlide(12);
   else if (event.keyCode === 39) triggerSlide(3);
   else if (event.keyCode === 40) triggerSlide(6);
+  else repeatCatcher = false;
 };
 
 var swipeHandler = function (event) {
-  if (repeatCatcher) return;
   event.preventDefault();
   event.stopPropagation();
+  if (!touchOrigin) return;
   var touchObj = event.changedTouches[0];
-  if (!touchOrigin) {
-    touchOrigin = [touchObj.clientX, touchObj.clientY];
-    swipeDirection = 0;
-    return;
-  }
   var deltaX = touchObj.clientX - touchOrigin[0];
   var deltaY = touchObj.clientY - touchOrigin[1];
   var angle = deltaY / deltaX;
-  var calcDirection =
+  var direction =
     Math.abs(angle) > 2
     ? (deltaY > 0 ? 6 : 12)
     : Math.abs(angle) < 0.5
     ? (deltaX > 0 ? 3 : 9) : 0;
-  if (!calcDirection) {
-    touchOrigin = [touchObj.clientX, touchObj.clientY];
-    swipeDirection = 0;
-    return;
-  }
-  if (swipeDirection !== calcDirection) {
-    touchOrigin = [touchObj.clientX, touchObj.clientY];
-    swipeDirection = calcDirection;
-    return;
-  }
-  if (swipeDirection === 3 && deltaX > swipeThreshold) triggerSlide(3);
-  else if (swipeDirection === 6 && deltaY > swipeThreshold) triggerSlide(6);
-  else if (swipeDirection === 9 && deltaX < -swipeThreshold) triggerSlide(9);
-  else if (swipeDirection === 12 && deltaY < -swipeThreshold) triggerSlide(12);
+  touchOrigin = null;
+  if (direction === 3 && deltaX > swipeThreshold) triggerSlide(3);
+  else if (direction === 6 && deltaY > swipeThreshold) triggerSlide(6);
+  else if (direction === 9 && deltaX < -swipeThreshold) triggerSlide(9);
+  else if (direction === 12 && deltaY < -swipeThreshold) triggerSlide(12);
 };
 
 setInterval(function () {
@@ -220,9 +207,7 @@ setInterval(function () {
 generateTile();
 generateTile();
 
-document.addEventListener('keyup', resetEvent);
 document.addEventListener('keydown', keyPressHandler);
-touchZone.addEventListener('touchstart', resetEvent);
-touchZone.addEventListener('touchmove', swipeHandler);
-touchZone.addEventListener('touchcancel', resetEvent);
-touchZone.addEventListener('touchend', resetEvent);
+document.addEventListener('keyup', function (event) { repeatCatcher = false; });
+touchZone.addEventListener('touchstart', swipeInit);
+touchZone.addEventListener('touchmove', debounce(swipeHandler, 50));
